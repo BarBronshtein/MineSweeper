@@ -107,6 +107,8 @@ function cellClicked(elCell, i, j) {
       renderBoard(gBoard, '.board-container', false);
     }
     if (checkGameOver()) endGame();
+    elSmiley.textContent = gSmiley[1];
+    setTimeout(() => (elSmiley.textContent = gSmiley[0]), 400);
     renderCell(i, j, true);
     return;
   }
@@ -198,11 +200,13 @@ function setMinesNegsCount(i, j) {
 
 function renderCellsAround(i, j) {
   // Shows how many cells around the cell are mines
+
   // setting the cur cell to shown
   gBoard[i][j].isShown = true;
 
   // Checks if we didnt covered all cells when recursivley revealing cells
   if (checkGameOver()) endGame();
+
   // Our recursion function stop condtion & If cell marked dont render
   if (gBoard[i][j].minesAroundCount && !gBoard[i][j].isMarked) {
     renderCell(i, j);
@@ -213,7 +217,7 @@ function renderCellsAround(i, j) {
 
     for (let secondIdx = j - 1; secondIdx < j + 2; secondIdx++) {
       if (secondIdx < 0 || secondIdx >= gLevel.SIZE) continue;
-      // If marked dont render
+      // If marked dont render cell
       if (gBoard[idx][secondIdx].isMarked) continue;
 
       const neighborCell = renderCell(idx, secondIdx);
