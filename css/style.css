@@ -6,13 +6,13 @@
 .display-container {
   background-color: #ddd;
   text-align: center;
-  margin-top: 2rem;
 }
 .timer,
 .flags,
 .smiley {
   display: inline-block;
   margin: 1rem 12rem;
+  font-size: 2rem;
 }
 .board-container {
   width: 100%;

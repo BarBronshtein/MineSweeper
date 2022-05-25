@@ -9,7 +9,7 @@ function renderBoard(mat, selector, isGameOn = true) {
       const showMines = isGameOn ? '' : gBoard[i][j].isMine ? 'lost' : '';
       var className = `${showMines} hidden cell-${i}-${j}`;
       strHTML +=
-        `<td onclick="cellClicked(this,${i},${j})" class="` +
+        `<td oncontextmenu="cellMarked(event,${i},${j})" onclick="cellClicked(this,${i},${j})" class="` +
         className +
         '"> ' +
         cell +
@@ -21,9 +21,15 @@ function renderBoard(mat, selector, isGameOn = true) {
   var elContainer = document.querySelector(selector);
   elContainer.innerHTML = strHTML;
 }
+
+function renderFlag(i, j) {
+  const elCell = document.querySelector(`.cell-${i}-${j}`);
+  elCell.innerHTML = elCell.innerHTML === FLAG ? EMPTY : FLAG;
+}
+
 function renderCell(i, j, clicked = false) {
   // Select the elCell and set the value
-  var elCell = document.querySelector(`.cell-${i}-${j}`);
+  const elCell = document.querySelector(`.cell-${i}-${j}`);
   if (gBoard[i][j].isMine && clicked) {
     elCell.innerHTML = MINE;
     elCell.style.backgroundColor = 'red';
