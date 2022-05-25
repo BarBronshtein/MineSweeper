@@ -9,7 +9,7 @@
   margin-top: 2rem;
 }
 .timer,
-.score,
+.flags,
 .smiley {
   display: inline-block;
   margin: 1rem 12rem;
@@ -25,14 +25,13 @@ table {
 }
 td {
   text-align: center;
-  padding: 1rem 0;
-  height: 4rem;
+  height: 2rem;
   max-width: 5rem;
   max-height: 5rem;
   background-color: grey;
   width: 10rem;
 }
-td:hover {
+.hidden:hover {
   cursor: pointer;
 }
 input {
@@ -40,4 +39,10 @@ input {
 }
 .hidden {
   background-color: #c9c9c9;
+}
+.lost {
+  background-color: red;
+}
+.smiley:hover {
+  cursor: pointer;
 }

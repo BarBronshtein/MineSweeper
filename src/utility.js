@@ -1,15 +1,16 @@
 'use strict';
 
-function renderBoard(mat, selector) {
+function renderBoard(mat, selector, isGameOn = true) {
   var strHTML = '<table border="0"><tbody>';
   for (var i = 0; i < mat.length; i++) {
     strHTML += '<tr>';
     for (var j = 0; j < mat[0].length; j++) {
-      var cell = EMPTY;
-      var dataSet = `hidden cell-${i}-${j}`;
+      var cell = gBoard[i][j].isMine ? MINE : EMPTY;
+      const showMines = isGameOn ? '' : gBoard[i][j].isMine ? 'lost' : '';
+      var className = `${showMines} hidden cell-${i}-${j}`;
       strHTML +=
         `<td onclick="cellClicked(this,${i},${j})" class="` +
-        dataSet +
+        className +
         '"> ' +
         cell +
         ' </td>';
@@ -28,9 +29,28 @@ function renderCell(i, j, clicked = false) {
     elCell.style.backgroundColor = 'red';
     elCell.classList.remove('hidden');
   } else {
-    elCell.innerHTML = gBoard[i][j].minesAroundCount
-      ? gBoard[i][j].minesAroundCount
-      : EMPTY;
+    switch (gBoard[i][j].minesAroundCount) {
+      case 0:
+        elCell.innerHTML = EMPTY;
+        break;
+      case 1:
+        elCell.innerHTML = gBoard[i][j].minesAroundCount;
+        elCell.style.color = 'blue';
+        break;
+      case 2:
+        elCell.innerHTML = gBoard[i][j].minesAroundCount;
+        elCell.style.color = 'green';
+        break;
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+        elCell.innerHTML = gBoard[i][j].minesAroundCount;
+        elCell.style.color = 'red';
+        break;
+    }
   }
   if (!gBoard[i][j].isMine) elCell.classList.remove('hidden');
   return elCell.innerHTML;

@@ -9,13 +9,35 @@
   </head>
   <body>
     <div class="display-container">
-      <div class="score">10</div>
-      <div class="smiley">smiley</div>
+      <div class="flags">10</div>
+      <div onclick="initGame()" class="smiley">smiley</div>
       <div class="timer">007</div>
       <br />
-      <label for=""><input type="radio" name="" id="" checked /></label
-      >easy<label for=""><input type="radio" name="" id="" /></label
-      >medium<label for=""><input type="radio" name="" id="" /></label>hard
+      <label for="">
+        <input
+          onclick="setDifficulty(this)"
+          type="radio"
+          name="difficulty"
+          value="easy"
+          checked
+        />Easy</label
+      >
+      <label
+        ><input
+          onclick="setDifficulty(this)"
+          type="radio"
+          name="difficulty"
+          value="medium"
+        />Medium
+      </label>
+      <label>
+        <input
+          onclick="setDifficulty(this)"
+          type="radio"
+          name="difficulty"
+          value="hard"
+        />Hard
+      </label>
     </div>
     <div class="board-container"></div>
     <footer>BarBronsthein</footer>

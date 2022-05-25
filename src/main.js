@@ -1,10 +1,14 @@
 'use strict';
 var gBoard;
 var gInterval;
+const gSmiley = ['😁', '😮', '🤕', '😎'];
+const LIVE = '❣️';
 const EMPTY = ' ';
 const MINE = '💣';
 const FLAG = '🚩';
 const elTimer = document.querySelector('.timer');
+const elSmiley = document.querySelector('.smiley');
+const elFlags = document.querySelector('.flags');
 const gLevel = {
   SIZE: 4,
   MINES: 2,
@@ -15,13 +19,13 @@ const gGame = {
   showCount: 0,
   markedCount: 0,
   secsPassed: 0,
+  lives: 3,
 };
 
 initGame();
 
 function initGame() {
-  //   init();
-  //   setDifficulty(el, gLevel);
+  init();
   gBoard = createBoard();
   renderBoard(gBoard, '.board-container');
 }
@@ -31,20 +35,27 @@ function init() {
   gGame.showCount = 0;
   gGame.markedCount = 0;
   gGame.secsPassed = 0;
+  elFlags.textContent = gLevel.MINES;
+  elSmiley.textContent = gSmiley[0];
+  elTimer.textContent = gGame.secsPassed;
+  gGame.isOn = true;
+  gGame.lives = 3;
   clearInterval(gInterval);
 }
 
-function setDifficulty(el, level) {
-  if (el.textContent === 'easy') {
-    level.SIZE = 4;
-    level.MINES = 2;
-  } else if (el.textContent === 'medium') {
-    level.SIZE = 8;
-    level.MINES = 12;
-  } else if (el.textContent === 'hard') {
-    level.SIZE = 12;
-    level.MINES = 30;
+function setDifficulty(el) {
+  console.log(el.value);
+  if (el.value === 'easy') {
+    gLevel.SIZE = 4;
+    gLevel.MINES = 2;
+  } else if (el.value === 'medium') {
+    gLevel.SIZE = 8;
+    gLevel.MINES = 12;
+  } else if (el.value === 'hard') {
+    gLevel.SIZE = 12;
+    gLevel.MINES = 30;
   }
+  initGame();
 }
 
 function createBoard() {
@@ -66,7 +77,7 @@ function createBoard() {
 
 function cellClicked(elCell, i, j) {
   // Guard
-  if (!elCell.classList.contains('hidden')) return;
+  if (!elCell.classList.contains('hidden') || !gGame.isOn) return;
   // Change cell to shown
   gBoard[i][j].isShown = true;
   // First move
@@ -77,24 +88,44 @@ function cellClicked(elCell, i, j) {
     startTimer();
     // Create mines in random position
     createRandomMines(gBoard);
-    // TODO: Update minesaroundcount to all cells
+    // Update mines around counter to all cells
     countNegsMines();
   }
   if (gBoard[i][j].isMine) {
-    endGame();
+    gGame.lives--;
+    if (!gGame.lives) {
+      endGame(false);
+      // Render mines on board if game stepped on a mine
+      renderBoard(gBoard, '.board-container', false);
+    }
+    if (checkGameOver()) endGame();
     renderCell(i, j, true);
     return;
   }
-  // TODO:reveal cell
+  if (checkGameOver()) {
+    endGame();
+    renderCell(i, j);
+    return;
+  }
+  // Reveals cells around empty cells
   renderCellsAround(i, j);
   //   expandShown(gBoard, elCell, i, j);
-  // TODO:render them on board
-  //   if (!gGame.isOn) renderMines(gBoard);
 }
 
 function cellMarked(elCell) {}
 
-function checkGameOver() {}
+function checkGameOver() {
+  let shownCells = 0;
+  let shownMines = 0;
+  for (let i = 0; i < gBoard.length; i++) {
+    for (let j = 0; j < gBoard.length; j++) {
+      if (gBoard[i][j].isShown === true) shownCells++;
+      if (gBoard[i][j].isShown === true && gBoard[i][j].isMine) shownMines++;
+    }
+  }
+
+  return shownCells - shownMines === gLevel.SIZE ** 2 - gLevel.MINES;
+}
 
 function createRandomMines(board) {
   // Putting mines in random locations
@@ -116,9 +147,11 @@ function startTimer() {
   }, 1000);
 }
 
-function endGame() {
+function endGame(isVictory = true) {
   // TODO:finish game functionallity
-  console.log('Too bad you lost');
+  gGame.isOn = false;
+  elSmiley.textContent = isVictory ? gSmiley[3] : gSmiley[2];
+  clearInterval(gInterval);
 }
 
 function countNegsMines() {
@@ -146,8 +179,9 @@ function setMinesNegsCount(i, j) {
 
 function renderCellsAround(i, j) {
   // Shows how many cells around the cell are mines
+  // setting the cur cell to shown
   gBoard[i][j].isShown = true;
-
+  if (checkGameOver()) endGame();
   if (gBoard[i][j].minesAroundCount) {
     renderCell(i, j);
     return;
@@ -162,9 +196,10 @@ function renderCellsAround(i, j) {
       // Checks if we are not in the current square so the recursion wont be infinite
       if (i === idx && j === idx) continue;
 
-      if (neighborCell === EMPTY && !gBoard[idx][secondIdx].isShown) {
+      if (neighborCell === EMPTY && !gBoard[idx][secondIdx].isShown)
         renderCellsAround(idx, secondIdx);
-      }
+      // All neighbors cells that have mines around need to be set to shown
+      else gBoard[idx][secondIdx].isShown = true;
     }
   }
 }
