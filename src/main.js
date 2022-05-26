@@ -9,6 +9,11 @@ const FLAG = '🚩';
 const elTimer = document.querySelector('.timer');
 const elSmiley = document.querySelector('.smiley');
 const elFlags = document.querySelector('.flags');
+// const elLives= document.querySelector('.lives');
+const elEndMsg = document.querySelector('.end-msg');
+const elHints = document.querySelector('.hints');
+const elSafeClick = document.querySelector('.safeclick');
+
 const gLevel = {
   SIZE: 4,
   MINES: 2,
@@ -35,36 +40,38 @@ function initGame() {
 
 function init() {
   // Initiallizing all global variables
+  gGame.history = [];
+  gGame.isHintOn = false;
+  gGame.safeClicks = 3;
+  gGame.hints = 3;
   gGame.showCount = 0;
   gGame.markedCount = 0;
   gGame.secsPassed = 0;
+  gGame.lives = 3;
+  gGame.isOn = true;
   elFlags.textContent = gLevel.MINES;
   elSmiley.textContent = gSmiley[0];
   elTimer.textContent = gGame.secsPassed;
-  gGame.isOn = true;
-  gGame.lives = 3;
   clearInterval(gInterval);
 }
 
 function setDifficulty(el) {
   console.log(el.value);
   if (el.value === 'easy') {
-    gLevel.difficulty = 'easy';
-    gLevel.SIZE = 4;
-    gLevel.MINES = 2;
-    gLevel.marksLeft = gLevel.MINES;
+    difficulty(el.value, 4, 2);
   } else if (el.value === 'medium') {
-    gLevel.difficulty = 'medium';
-    gLevel.SIZE = 8;
-    gLevel.MINES = 12;
-    gLevel.marksLeft = gLevel.MINES;
+    difficulty(el.value, 8, 12);
   } else if (el.value === 'hard') {
-    gLevel.difficulty = 'hard';
-    gLevel.SIZE = 12;
-    gLevel.MINES = 30;
-    gLevel.marksLeft = gLevel.MINES;
+    difficulty(el.value, 12, 30);
   }
   initGame();
+}
+
+function difficulty(difficulty, size, mines) {
+  gLevel.difficulty = difficulty;
+  gLevel.SIZE = size;
+  gLevel.MINES = mines;
+  gLevel.marksLeft = mines;
 }
 
 function createBoard() {
@@ -93,11 +100,6 @@ function cellClicked(elCell, i, j) {
   )
     return;
 
-  // When player activated hint
-  if (gGame.isHintOn) {
-    showAndHideCells(i, j);
-    return;
-  }
   // Change cell to shown
   gBoard[i][j].isShown = true;
 
@@ -114,6 +116,12 @@ function cellClicked(elCell, i, j) {
     countNegsMines();
   }
 
+  // When player activated hint
+  if (gGame.isHintOn) {
+    gBoard[i][j].isShown = false;
+    showAndHideCells(i, j);
+    return;
+  }
   // When hitting a mine
   if (gBoard[i][j].isMine) {
     gGame.lives--;
@@ -125,7 +133,10 @@ function cellClicked(elCell, i, j) {
     }
     if (gLevel.difficulty === 'easy' && checkGameOver()) endGame();
     elSmiley.textContent = gSmiley[1];
-    setTimeout(() => (elSmiley.textContent = gSmiley[0]), 400);
+    setTimeout(
+      () => (elSmiley.textContent = gGame.isOn ? gSmiley[0] : gSmiley[3]),
+      400
+    );
     renderCell(i, j, true);
     return;
   }
@@ -148,7 +159,6 @@ function cellMarked(ev, i, j) {
     removeFlag(i, j);
   } else {
     if (!gLevel.marksLeft) {
-      if (checkGameOver()) endGame();
       return;
     }
     putFlag(i, j);
@@ -157,18 +167,18 @@ function cellMarked(ev, i, j) {
 
 function checkGameOver() {
   let shownCells = 0;
-  let shownMines = 0;
   let rightMark = 0;
   for (let i = 0; i < gBoard.length; i++) {
     for (let j = 0; j < gBoard.length; j++) {
       if (gBoard[i][j].isShown === true) shownCells++;
-      if (gBoard[i][j].isShown === true && gBoard[i][j].isMine) shownMines++;
       if (!gBoard[i][j].isShown && gBoard[i][j].isMine && gBoard[i][j].isMarked)
         rightMark++;
     }
   }
-
-  return shownCells === gLevel.SIZE ** 2 || rightMark === gLevel.MINES;
+  if (shownCells === gLevel.SIZE ** 2) return true;
+  return (
+    shownCells === gLevel.SIZE ** 2 - gLevel.MINES && rightMark === gLevel.MINES
+  );
 }
 
 function createRandomMines(board) {
@@ -187,15 +197,17 @@ function startTimer() {
   // Starts game timer
   gInterval = setInterval(() => {
     gGame.secsPassed++;
-    elTimer.textContent = gGame.secsPassed.toFixed(1).slice(0, 1);
+    elTimer.textContent = gGame.secsPassed.toFixed(1);
   }, 1000);
 }
 
 function endGame(isVictory = true) {
+  let msg = isVictory ? 'You Won' : 'You Lost';
   // TODO:finish game functionallity
   gGame.isOn = false;
   elSmiley.textContent = isVictory ? gSmiley[3] : gSmiley[2];
   clearInterval(gInterval);
+  elEndMsg.innerHTML = `<h2 class="${isVictory ? 'won' : 'lose'}">${msg}</h2>`;
   // Add a game over msg to be displayed on screen
 }
 
@@ -259,6 +271,7 @@ function putFlag(i, j) {
   gLevel.marksLeft--;
   elFlags.textContent = gLevel.marksLeft;
   renderFlag(i, j);
+  if (!gLevel.marksLeft) if (checkGameOver()) endGame();
 }
 
 function removeFlag(i, j) {

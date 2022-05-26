@@ -3,6 +3,11 @@
   margin: 0;
   box-sizing: border-box;
 }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.7em;
+  background-color: #ddd;
+}
 .display-container {
   background-color: #ddd;
   text-align: center;
@@ -11,7 +16,7 @@
 .flags,
 .smiley {
   display: inline-block;
-  margin: 1rem 12rem;
+  margin: 1rem 10rem;
   font-size: 2rem;
 }
 .board-container {
@@ -26,16 +31,16 @@ table {
 td {
   text-align: center;
   height: 2rem;
-  max-width: 5rem;
-  max-height: 5rem;
   background-color: grey;
-  width: 10rem;
+  width: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
 }
 .hidden:hover {
   cursor: pointer;
 }
 input {
-  margin: 0.5rem;
+  margin: 0.2rem;
 }
 .hidden {
   background-color: #c9c9c9;
@@ -48,4 +53,44 @@ input {
 }
 .reveal {
   background-color: bisque;
+}
+.end-msg {
+  margin-left: 47%;
+}
+.won {
+  color: #81acde;
+}
+.lose {
+  color: red;
+}
+button {
+  align-items: center;
+  align-content: center;
+  display: inline-block;
+  font-size: 1rem;
+  color: #333;
+  background-color: #ddd;
+  margin: 1rem 10.641926rem;
+  padding: 1rem;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  color: #f7c08a;
+  background-color: #333;
+}
+.special-features {
+  background-color: #333;
+  color: #fff;
+  overflow: auto;
+}
+footer {
+  text-align: center;
+  background-color: #444;
+  color: #fff;
+  padding: 20px;
+}
+
+.safeclick {
+  color: palevioletred;
 }

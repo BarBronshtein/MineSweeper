@@ -13,7 +13,7 @@
       <div onclick="initGame()" class="smiley">smiley</div>
       <div class="timer">007</div>
       <br />
-      <label for="">
+      <label>
         <input
           onclick="setDifficulty(this)"
           type="radio"
@@ -40,13 +40,21 @@
       </label>
     </div>
     <div class="special-features">
-      <button onclick="hint()">Hint</button>
-      <button onclick="safeClick()">Safe Click</button>
-      <button onclick="undo()">Undo</button>
+      <button onclick="hint()">
+        Hint
+        <br />
+        <span class="hints">💡</span>
+      </button>
+      <button onclick="safeClick()">
+        SafeClick
+        <br />
+        Remain:<span class="safeclick">3</span>
+      </button>
+      <button onclick="undo()">Undo <br />↩️</button>
     </div>
     <div class="board-container"></div>
-
-    <footer>BarBronsthein</footer>
+    <div class="end-msg"></div>
+    <footer>© Copyright by BarBronsthein /MineSweeper</footer>
     <script src="src/utility.js"></script>
     <script src="src/main.js"></script>
   </body>
