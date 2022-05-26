@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/style.css" />
     <title>Game Sweeper</title>
   </head>
-  <body>
+  <body onload="initGame()">
     <div class="display-container">
       <div class="flags">10</div>
       <div onclick="initGame()" class="smiley">smiley</div>
@@ -39,7 +39,13 @@
         />Hard
       </label>
     </div>
+    <div class="special-features">
+      <button onclick="hint()">Hint</button>
+      <button onclick="safeClick()">Safe Click</button>
+      <button onclick="undo()">Undo</button>
+    </div>
     <div class="board-container"></div>
+
     <footer>BarBronsthein</footer>
     <script src="src/utility.js"></script>
     <script src="src/main.js"></script>

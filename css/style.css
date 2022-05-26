@@ -46,3 +46,6 @@ input {
 .smiley:hover {
   cursor: pointer;
 }
+.reveal {
+  background-color: bisque;
+}

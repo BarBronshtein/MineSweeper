@@ -33,7 +33,6 @@ function renderCell(i, j, clicked = false) {
   if (gBoard[i][j].isMine && clicked) {
     elCell.innerHTML = MINE;
     elCell.style.backgroundColor = 'red';
-    elCell.classList.remove('hidden');
   } else {
     switch (gBoard[i][j].minesAroundCount) {
       case 0:
@@ -58,8 +57,7 @@ function renderCell(i, j, clicked = false) {
         break;
     }
   }
-  if (!gBoard[i][j].isMine) elCell.classList.remove('hidden');
-  return elCell.innerHTML;
+  elCell.classList.remove('hidden');
 }
 
 function getRandomInc(min, max) {
@@ -70,8 +68,24 @@ function getRandEmptyCells() {
   const emptyCells = [];
   for (let i = 0; i < gLevel.SIZE; i++) {
     for (let j = 0; j < gLevel.SIZE; j++) {
-      if (!gBoard[i][j].isShown) emptyCells.push({ i, j });
+      if (!gBoard[i][j].isMine && !gBoard[i][j].isShown)
+        emptyCells.push({ i, j });
     }
   }
   return emptyCells;
+}
+
+function restoreCell(i, j, toRestore = false) {
+  // Setting cell to default (before clicked)
+
+  const elCell = document.querySelector(`.cell-${i}-${j}`);
+  if (gBoard[i][j].isShown && !toRestore) return;
+  elCell.classList.add('hidden');
+  if (elCell.innerHTML === MINE) elCell.style.backgroundColor = '#c9c9c9';
+  elCell.innerHTML = EMPTY;
+}
+
+function revealcell(i, j) {
+  const elCell = document.querySelector(`.cell-${i}-${j}`);
+  elCell.classList.toggle('reveal');
 }

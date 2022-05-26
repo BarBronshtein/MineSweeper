@@ -13,6 +13,7 @@ const gLevel = {
   SIZE: 4,
   MINES: 2,
   marksLeft: 2,
+  difficulty: 'easy',
 };
 const gGame = {
   isOn: false,
@@ -20,9 +21,11 @@ const gGame = {
   markedCount: 0,
   secsPassed: 0,
   lives: 3,
+  hints: 3,
+  safeClicks: 3,
+  isHintOn: false,
+  history: [],
 };
-
-initGame();
 
 function initGame() {
   init();
@@ -46,14 +49,17 @@ function init() {
 function setDifficulty(el) {
   console.log(el.value);
   if (el.value === 'easy') {
+    gLevel.difficulty = 'easy';
     gLevel.SIZE = 4;
     gLevel.MINES = 2;
     gLevel.marksLeft = gLevel.MINES;
   } else if (el.value === 'medium') {
+    gLevel.difficulty = 'medium';
     gLevel.SIZE = 8;
     gLevel.MINES = 12;
     gLevel.marksLeft = gLevel.MINES;
   } else if (el.value === 'hard') {
+    gLevel.difficulty = 'hard';
     gLevel.SIZE = 12;
     gLevel.MINES = 30;
     gLevel.marksLeft = gLevel.MINES;
@@ -86,8 +92,16 @@ function cellClicked(elCell, i, j) {
     gBoard[i][j].isMarked
   )
     return;
+
+  // When player activated hint
+  if (gGame.isHintOn) {
+    showAndHideCells(i, j);
+    return;
+  }
   // Change cell to shown
   gBoard[i][j].isShown = true;
+
+  gGame.history.push({ i, j });
   // First move
   if (!gGame.secsPassed) {
     // To prevent exploiting mouse clicks
@@ -99,14 +113,17 @@ function cellClicked(elCell, i, j) {
     // Update mines around counter to all cells
     countNegsMines();
   }
+
+  // When hitting a mine
   if (gBoard[i][j].isMine) {
     gGame.lives--;
+    // Checks if we our out of lives
     if (!gGame.lives) {
       endGame(false);
-      // Render mines on board if game stepped on a mine
+      // Render all mines on board if lost all lives
       renderBoard(gBoard, '.board-container', false);
     }
-    if (checkGameOver()) endGame();
+    if (gLevel.difficulty === 'easy' && checkGameOver()) endGame();
     elSmiley.textContent = gSmiley[1];
     setTimeout(() => (elSmiley.textContent = gSmiley[0]), 400);
     renderCell(i, j, true);
@@ -123,13 +140,17 @@ function cellClicked(elCell, i, j) {
 }
 
 function cellMarked(ev, i, j) {
+  // Mark or Unmark cell
   ev.preventDefault();
   if (gBoard[i][j].isShown || !gGame.isOn) return;
 
   if (gBoard[i][j].isMarked) {
     removeFlag(i, j);
   } else {
-    if (!gLevel.marksLeft) return;
+    if (!gLevel.marksLeft) {
+      if (checkGameOver()) endGame();
+      return;
+    }
     putFlag(i, j);
   }
 }
@@ -137,14 +158,17 @@ function cellMarked(ev, i, j) {
 function checkGameOver() {
   let shownCells = 0;
   let shownMines = 0;
+  let rightMark = 0;
   for (let i = 0; i < gBoard.length; i++) {
     for (let j = 0; j < gBoard.length; j++) {
       if (gBoard[i][j].isShown === true) shownCells++;
       if (gBoard[i][j].isShown === true && gBoard[i][j].isMine) shownMines++;
+      if (!gBoard[i][j].isShown && gBoard[i][j].isMine && gBoard[i][j].isMarked)
+        rightMark++;
     }
   }
 
-  return shownCells - shownMines === gLevel.SIZE ** 2 - gLevel.MINES;
+  return shownCells === gLevel.SIZE ** 2 || rightMark === gLevel.MINES;
 }
 
 function createRandomMines(board) {
@@ -220,16 +244,12 @@ function renderCellsAround(i, j) {
       // If marked dont render cell
       if (gBoard[idx][secondIdx].isMarked) continue;
 
-      const neighborCell = renderCell(idx, secondIdx);
+      renderCell(idx, secondIdx);
       // Checks if we are not in the current square so the recursion wont be infinite
       if (i === idx && j === idx) continue;
 
-      if (neighborCell === EMPTY && !gBoard[idx][secondIdx].isShown)
-        renderCellsAround(idx, secondIdx);
-      // All neighbors cells that have mines around need to be set to shown
-      else {
-        gBoard[idx][secondIdx].isShown = true;
-      }
+      if (!gBoard[idx][secondIdx].isShown) renderCellsAround(idx, secondIdx);
+      gBoard[idx][secondIdx].isShown = true;
     }
   }
 }
@@ -246,4 +266,78 @@ function removeFlag(i, j) {
   gLevel.marksLeft++;
   elFlags.textContent = gLevel.marksLeft;
   renderFlag(i, j);
+}
+
+function showAndHideCells(i, j) {
+  // Showing cells in a sqaure and 1 sec after hides them
+  for (let idx = i - 1; idx < i + 2; idx++) {
+    if (idx < 0 || idx >= gLevel.SIZE) continue;
+
+    for (let secondIdx = j - 1; secondIdx < j + 2; secondIdx++) {
+      if (secondIdx < 0 || secondIdx >= gLevel.SIZE) continue;
+      renderCell(idx, secondIdx, true);
+
+      setTimeout(() => {
+        gGame.isHintOn = false;
+        restoreCell(idx, secondIdx);
+      }, 1000);
+    }
+  }
+}
+
+function hint() {
+  // Guard
+  if (!gGame.hints) return;
+  gGame.isHintOn = true;
+  gGame.hints--;
+}
+
+function safeClick() {
+  // Guard
+  if (!gGame.safeClicks) return;
+  gGame.safeClicks--;
+  const emptyCellsIdx = getRandEmptyCells();
+  const emptyCellIdx = emptyCellsIdx.splice(
+    getRandomInc(0, emptyCellsIdx.length - 1)
+  )[0];
+  revealcell(emptyCellIdx.i, emptyCellIdx.j);
+  setTimeout(() => revealcell(emptyCellIdx.i, emptyCellIdx.j), 1000);
+}
+
+function undo() {
+  if (!gGame.history.length) return;
+  const { i, j } = gGame.history.pop();
+  restoreMove(i, j);
+}
+
+function restoreMove(i, j) {
+  // Hiding all cells we discovered prev move
+  if (!gGame.isOn) return;
+  gBoard[i][j].isShown = false;
+
+  // Our recursion function stop condtion & If cell marked dont render
+  if (gBoard[i][j].minesAroundCount && !gBoard[i][j].isMarked) {
+    if (gBoard[i][j].isMine) gGame.lives++;
+    restoreCell(i, j, true);
+    return;
+  }
+  for (let idx = i - 1; idx < i + 2; idx++) {
+    if (idx < 0 || idx >= gLevel.SIZE) continue;
+
+    for (let secondIdx = j - 1; secondIdx < j + 2; secondIdx++) {
+      if (secondIdx < 0 || secondIdx >= gLevel.SIZE) continue;
+      // If marked dont restore cell
+      if (gBoard[idx][secondIdx].isMarked) continue;
+
+      if (gBoard[i][j].isMine) gGame.lives++;
+      restoreCell(idx, secondIdx, true);
+      // Checks if we are not in the current square so the recursion wont be infinite
+      if (i === idx && j === idx) continue;
+
+      if (gBoard[idx][secondIdx].isShown) {
+        gBoard[idx][secondIdx].isShown = false;
+        restoreMove(idx, secondIdx);
+      }
+    }
+  }
 }
