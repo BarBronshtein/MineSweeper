@@ -20,11 +20,11 @@ const gBestScore = {
   elBestScore: document.querySelector('.bestscore'),
 };
 const gTimer = {
-  appendTens: document.querySelector('.tens'),
   appendSeconds: document.querySelector('.seconds'),
+  appendMinutes: document.querySelector('.minutes'),
   interval: 0,
-  tens: '00',
   seconds: '00',
+  minutes: '00',
 };
 
 const gLevel = {
@@ -35,8 +35,6 @@ const gLevel = {
 };
 const gGame = {
   isOn: false,
-  showCount: 0,
-  markedCount: 0,
   lives: 3,
   hints: 3,
   safeClicks: 3,
@@ -55,16 +53,15 @@ function init() {
   gGame.history = [];
   gGame.isHintOn = false;
   gGame.safeClicks = 3;
+  gLevel.marksLeft = gLevel.MINES;
   gGame.hints = 3;
-  gGame.showCount = 0;
-  gGame.markedCount = 0;
   gGame.lives = 3;
   gGame.isOn = true;
   gGame.secsPassed = 0;
-  gTimer.tens = '0';
-  gTimer.seconds = '0';
-  gTimer.appendSeconds.textContent = '0';
-  gTimer.appendTens.textContent = '0';
+  gTimer.seconds = '00';
+  gTimer.minutes = '00';
+  gTimer.appendMinutes.textContent = '00';
+  gTimer.appendSeconds.textContent = '00';
   elFlags.textContent = 'FlagsCount:' + gLevel.MINES;
   elSmiley.textContent = gSmiley[0];
   elLives.textContent = LIFE.repeat(gGame.lives);
@@ -79,7 +76,6 @@ function init() {
 }
 
 function setDifficulty(el) {
-  console.log(el.value);
   if (el.value === 'easy') {
     difficulty(el.value, 4, 2);
   } else if (el.value === 'medium') {
@@ -110,7 +106,6 @@ function createBoard() {
       };
     }
   }
-  console.log(board);
   return board;
 }
 
@@ -222,24 +217,29 @@ function createRandomMines(board) {
 
 function startTimer() {
   // Starts game timer
-  gTimer.interval = setInterval(timer, 10);
+  gTimer.interval = setInterval(timer, 1000);
 }
 
 function timer() {
-  gTimer.tens++;
+  gTimer.seconds++;
 
-  if (gTimer.tens <= 9) gTimer.appendTens.innerHTML = '0' + gTimer.tens;
+  if (gTimer.seconds <= 9)
+    gTimer.appendSeconds.innerHTML =
+      '0' + gTimer.seconds.toString().padEnd(6, ':000');
 
-  if (gTimer.tens > 9) gTimer.appendTens.innerHTML = gTimer.tens;
+  if (gTimer.seconds > 9)
+    gTimer.appendSeconds.innerHTML = gTimer.seconds
+      .toString()
+      .padEnd(6, ':000');
 
-  if (gTimer.tens > 99) {
-    gTimer.seconds++;
-    gTimer.appendSeconds.innerHTML = '0' + gTimer.seconds;
-    gTimer.tens = 0;
-    gTimer.appendTens.innerHTML = '0' + 0;
+  if (gTimer.seconds > 59) {
+    gTimer.minutes++;
+    gTimer.appendMinutes.innerHTML = '0' + gTimer.minutes;
+    gTimer.seconds = 0;
+    gTimer.appendSeconds.innerHTML = '0' + 0;
   }
 
-  if (gTimer.seconds > 9) gTimer.appendSeconds.innerHTML = gTimer.seconds;
+  if (gTimer.minutes > 9) gTimer.appendMinutes.innerHTML = gTimer.minutes;
 }
 
 function endGame(isVictory = true) {
@@ -253,9 +253,9 @@ function endGame(isVictory = true) {
 
   if (
     isVictory &&
-    `${gBestScore[gLevel.difficulty]}` > `${gTimer.seconds}:${gTimer.tens}`
+    `${gBestScore[gLevel.difficulty]}` > `${gTimer.minutes}:${gTimer.seconds}`
   )
-    gBestScore[gLevel.difficulty] = `${gTimer.seconds}:${gTimer.tens}`;
+    gBestScore[gLevel.difficulty] = `${gTimer.minutes}:${gTimer.seconds}`;
   localStorage.setItem(
     'bestscore' + gLevel.difficulty,
     gBestScore[gLevel.difficulty]

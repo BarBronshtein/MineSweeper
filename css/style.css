@@ -25,7 +25,7 @@ body {
 }
 .timer,
 .flags {
-  margin: 0.5rem 12rem;
+  margin: 1rem 10rem;
   background: -webkit-linear-gradient(#6e3027, peru);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
