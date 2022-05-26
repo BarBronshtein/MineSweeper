@@ -10,8 +10,10 @@
   <body onload="initGame()">
     <div class="display-container">
       <div class="flags">10</div>
-      <div onclick="initGame()" class="smiley">smiley</div>
-      <div class="timer">007</div>
+      <div class="timer">
+        <span class="seconds">0</span> :
+        <span class="tens">0</span>
+      </div>
       <br />
       <label>
         <input
@@ -53,7 +55,10 @@
       <button onclick="undo()">Undo <br />↩️</button>
     </div>
     <p>Lives<br /><span class="lives">❣️❣️❣️</span></p>
+    <br />
+    <div onclick="initGame()" class="smiley">smiley</div>
     <div class="board-container"></div>
+    <p class="bestscore smiley">0</p>
     <div class="end-msg"></div>
     <footer>© Copyright by BarBronsthein /MineSweeper</footer>
     <script src="src/utility.js"></script>

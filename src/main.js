@@ -7,13 +7,25 @@ const HINT = '💡';
 const EMPTY = ' ';
 const MINE = '💣';
 const FLAG = '🚩';
-const elTimer = document.querySelector('.timer');
 const elSmiley = document.querySelector('.smiley');
 const elFlags = document.querySelector('.flags');
 const elLives = document.querySelector('.lives');
 const elEndMsg = document.querySelector('.end-msg');
 const elHints = document.querySelector('.hints');
 const elSafeClick = document.querySelector('.safeclick');
+const gBestScore = {
+  easy: '99:99',
+  medium: '99:99',
+  hard: '99:99',
+  elBestScore: document.querySelector('.bestscore'),
+};
+const gTimer = {
+  appendTens: document.querySelector('.tens'),
+  appendSeconds: document.querySelector('.seconds'),
+  interval: 0,
+  tens: '00',
+  seconds: '00',
+};
 
 const gLevel = {
   SIZE: 4,
@@ -25,7 +37,6 @@ const gGame = {
   isOn: false,
   showCount: 0,
   markedCount: 0,
-  secsPassed: 0,
   lives: 3,
   hints: 3,
   safeClicks: 3,
@@ -47,16 +58,24 @@ function init() {
   gGame.hints = 3;
   gGame.showCount = 0;
   gGame.markedCount = 0;
-  gGame.secsPassed = 0;
   gGame.lives = 3;
   gGame.isOn = true;
+  gGame.secsPassed = 0;
+  gTimer.tens = '0';
+  gTimer.seconds = '0';
+  gTimer.appendSeconds.textContent = '0';
+  gTimer.appendTens.textContent = '0';
   elFlags.textContent = 'FlagsCount:' + gLevel.MINES;
   elSmiley.textContent = gSmiley[0];
-  elTimer.textContent = gGame.secsPassed;
   elLives.textContent = LIFE.repeat(gGame.lives);
   elHints.textContent = HINT.repeat(gGame.hints);
   elSafeClick.textContent = gGame.safeClicks;
-  clearInterval(gInterval);
+  clearInterval(gTimer.interval);
+  elEndMsg.textContent = '';
+
+  gBestScore.elBestScore.textContent = localStorage.getItem(
+    `bestscore${gLevel.difficulty}`
+  );
 }
 
 function setDifficulty(el) {
@@ -107,7 +126,6 @@ function cellClicked(elCell, i, j) {
   // Change cell to shown
   gBoard[i][j].isShown = true;
 
-  gGame.history.push({ i, j });
   // First move
   if (!gGame.secsPassed) {
     // To prevent exploiting mouse clicks
@@ -126,6 +144,9 @@ function cellClicked(elCell, i, j) {
     showAndHideCells(i, j);
     return;
   }
+
+  gGame.history.push({ i, j });
+
   // When hitting a mine
   if (gBoard[i][j].isMine) {
     gGame.lives--;
@@ -151,6 +172,7 @@ function cellClicked(elCell, i, j) {
   if (checkGameOver()) {
     endGame();
     renderCell(i, j);
+
     return;
   }
 }
@@ -200,20 +222,44 @@ function createRandomMines(board) {
 
 function startTimer() {
   // Starts game timer
-  gInterval = setInterval(() => {
-    gGame.secsPassed++;
-    elTimer.textContent = gGame.secsPassed.toFixed(1);
-  }, 1000);
+  gTimer.interval = setInterval(timer, 10);
+}
+
+function timer() {
+  gTimer.tens++;
+
+  if (gTimer.tens <= 9) gTimer.appendTens.innerHTML = '0' + gTimer.tens;
+
+  if (gTimer.tens > 9) gTimer.appendTens.innerHTML = gTimer.tens;
+
+  if (gTimer.tens > 99) {
+    gTimer.seconds++;
+    gTimer.appendSeconds.innerHTML = '0' + gTimer.seconds;
+    gTimer.tens = 0;
+    gTimer.appendTens.innerHTML = '0' + 0;
+  }
+
+  if (gTimer.seconds > 9) gTimer.appendSeconds.innerHTML = gTimer.seconds;
 }
 
 function endGame(isVictory = true) {
   let msg = isVictory ? 'You Won' : 'You Lost';
-  // TODO:finish game functionallity
   gGame.isOn = false;
   elSmiley.textContent = isVictory ? gSmiley[3] : gSmiley[2];
-  clearInterval(gInterval);
+
+  clearInterval(gTimer.interval);
+
   elEndMsg.innerHTML = `<h2 class="${isVictory ? 'won' : 'lose'}">${msg}</h2>`;
-  // Add a game over msg to be displayed on screen
+
+  if (
+    isVictory &&
+    `${gBestScore[gLevel.difficulty]}` > `${gTimer.seconds}:${gTimer.tens}`
+  )
+    gBestScore[gLevel.difficulty] = `${gTimer.seconds}:${gTimer.tens}`;
+  localStorage.setItem(
+    'bestscore' + gLevel.difficulty,
+    gBestScore[gLevel.difficulty]
+  );
 }
 
 function countNegsMines() {
