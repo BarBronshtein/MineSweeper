@@ -12,12 +12,18 @@ body {
   background-color: #ddd;
   text-align: center;
 }
-.timer,
-.flags,
-.smiley {
+.timer {
   display: inline-block;
-  margin: 1rem 10rem;
-  font-size: 2rem;
+  margin: 0 10rem;
+}
+.flags {
+  display: inline-block;
+  margin: 0 7.5rem;
+}
+.smiley {
+  margin: 0 5rem;
+  display: inline-block;
+  font-size: 1.5rem;
 }
 .board-container {
   width: 100%;
@@ -55,7 +61,7 @@ input {
   background-color: bisque;
 }
 .end-msg {
-  margin-left: 47%;
+  margin-left: 46%;
 }
 .won {
   color: #81acde;
@@ -70,7 +76,7 @@ button {
   font-size: 1rem;
   color: #333;
   background-color: #ddd;
-  margin: 1rem 10.641926rem;
+  margin: 1rem 10.2rem;
   padding: 1rem;
   border: none;
   cursor: pointer;
@@ -82,15 +88,19 @@ button:hover {
 .special-features {
   background-color: #333;
   color: #fff;
-  overflow: auto;
 }
 footer {
   text-align: center;
   background-color: #444;
   color: #fff;
-  padding: 20px;
+  padding: 1rem;
 }
 
 .safeclick {
   color: palevioletred;
+}
+p {
+  text-align: center;
+  font-size: 1.8rem;
+  color: peru;
 }

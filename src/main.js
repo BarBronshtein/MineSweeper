@@ -2,14 +2,15 @@
 var gBoard;
 var gInterval;
 const gSmiley = ['😁', '😮', '🤕', '😎'];
-const LIVE = '❣️';
+const LIFE = '❣️';
+const HINT = '💡';
 const EMPTY = ' ';
 const MINE = '💣';
 const FLAG = '🚩';
 const elTimer = document.querySelector('.timer');
 const elSmiley = document.querySelector('.smiley');
 const elFlags = document.querySelector('.flags');
-// const elLives= document.querySelector('.lives');
+const elLives = document.querySelector('.lives');
 const elEndMsg = document.querySelector('.end-msg');
 const elHints = document.querySelector('.hints');
 const elSafeClick = document.querySelector('.safeclick');
@@ -49,9 +50,12 @@ function init() {
   gGame.secsPassed = 0;
   gGame.lives = 3;
   gGame.isOn = true;
-  elFlags.textContent = gLevel.MINES;
+  elFlags.textContent = 'FlagsCount:' + gLevel.MINES;
   elSmiley.textContent = gSmiley[0];
   elTimer.textContent = gGame.secsPassed;
+  elLives.textContent = LIFE.repeat(gGame.lives);
+  elHints.textContent = HINT.repeat(gGame.hints);
+  elSafeClick.textContent = gGame.safeClicks;
   clearInterval(gInterval);
 }
 
@@ -125,6 +129,7 @@ function cellClicked(elCell, i, j) {
   // When hitting a mine
   if (gBoard[i][j].isMine) {
     gGame.lives--;
+    elLives.textContent = LIFE.repeat(gGame.lives);
     // Checks if we our out of lives
     if (!gGame.lives) {
       endGame(false);
@@ -269,7 +274,7 @@ function renderCellsAround(i, j) {
 function putFlag(i, j) {
   gBoard[i][j].isMarked = true;
   gLevel.marksLeft--;
-  elFlags.textContent = gLevel.marksLeft;
+  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
   renderFlag(i, j);
   if (!gLevel.marksLeft) if (checkGameOver()) endGame();
 }
@@ -277,7 +282,7 @@ function putFlag(i, j) {
 function removeFlag(i, j) {
   gBoard[i][j].isMarked = false;
   gLevel.marksLeft++;
-  elFlags.textContent = gLevel.marksLeft;
+  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
   renderFlag(i, j);
 }
 
@@ -303,12 +308,15 @@ function hint() {
   if (!gGame.hints) return;
   gGame.isHintOn = true;
   gGame.hints--;
+  elHints.textContent = HINT.repeat(gGame.hints);
 }
 
 function safeClick() {
   // Guard
   if (!gGame.safeClicks) return;
   gGame.safeClicks--;
+  elSafeClick.textContent = gGame.safeClicks;
+
   const emptyCellsIdx = getRandEmptyCells();
   const emptyCellIdx = emptyCellsIdx.splice(
     getRandomInc(0, emptyCellsIdx.length - 1)
@@ -330,7 +338,10 @@ function restoreMove(i, j) {
 
   // Our recursion function stop condtion & If cell marked dont render
   if (gBoard[i][j].minesAroundCount && !gBoard[i][j].isMarked) {
-    if (gBoard[i][j].isMine) gGame.lives++;
+    if (gBoard[i][j].isMine) {
+      gGame.lives++;
+      elLives.textContent = LIFE.repeat(gGame.lives);
+    }
     restoreCell(i, j, true);
     return;
   }
@@ -342,7 +353,10 @@ function restoreMove(i, j) {
       // If marked dont restore cell
       if (gBoard[idx][secondIdx].isMarked) continue;
 
-      if (gBoard[i][j].isMine) gGame.lives++;
+      if (gBoard[i][j].isMine) {
+        gGame.lives++;
+        elLives.textContent = LIFE.repeat(gGame.lives);
+      }
       restoreCell(idx, secondIdx, true);
       // Checks if we are not in the current square so the recursion wont be infinite
       if (i === idx && j === idx) continue;
