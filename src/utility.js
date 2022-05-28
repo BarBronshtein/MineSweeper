@@ -57,7 +57,11 @@ function getRandEmptyCells() {
   const emptyCells = [];
   for (let i = 0; i < gLevel.SIZE; i++) {
     for (let j = 0; j < gLevel.SIZE; j++) {
-      if (!gBoard[i][j].isMine && !gBoard[i][j].isShown)
+      if (
+        !gBoard[i][j].isMine &&
+        !gBoard[i][j].isShown &&
+        !gBoard[i][j].isMarked
+      )
         emptyCells.push({ i, j });
     }
   }

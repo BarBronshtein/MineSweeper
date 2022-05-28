@@ -309,6 +309,7 @@ function showAndHideCells(i, j) {
 
     for (let secondIdx = j - 1; secondIdx < j + 2; secondIdx++) {
       if (secondIdx < 0 || secondIdx >= gLevel.SIZE) continue;
+      if (gBoard[idx][secondIdx].isMarked) continue;
       renderCell(idx, secondIdx, true);
 
       setTimeout(() => {
