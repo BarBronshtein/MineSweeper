@@ -49,30 +49,14 @@ function initGame() {
 }
 
 function init() {
-  // Initiallizing all global variables
-  gGame.history = [];
-  gGame.isHintOn = false;
-  gGame.safeClicks = 3;
-  gLevel.marksLeft = gLevel.MINES;
-  gGame.hints = 3;
-  gGame.lives = 3;
-  gGame.isOn = true;
-  gGame.secsPassed = 0;
-  gTimer.seconds = '00';
-  gTimer.minutes = '00';
-  gTimer.appendMinutes.textContent = '00';
-  gTimer.appendSeconds.textContent = '00';
-  elFlags.textContent = 'FlagsCount:' + gLevel.MINES;
-  elSmiley.textContent = gSmiley[0];
-  elLives.textContent = LIFE.repeat(gGame.lives);
-  elHints.textContent = HINT.repeat(gGame.hints);
-  elSafeClick.textContent = gGame.safeClicks;
-  clearInterval(gTimer.interval);
-  elEndMsg.textContent = '';
+  // Initiallizing all game variables and elements
 
-  gBestScore.elBestScore.textContent = localStorage.getItem(
-    `bestscore${gLevel.difficulty}`
-  );
+  // Reset game variables
+  resetGameVar();
+  // Reset timer
+  resetTimer();
+  // Reset elements
+  resetEl();
 }
 
 function setDifficulty(el) {
@@ -84,13 +68,6 @@ function setDifficulty(el) {
     difficulty(el.value, 12, 30);
   }
   initGame();
-}
-
-function difficulty(difficulty, size, mines) {
-  gLevel.difficulty = difficulty;
-  gLevel.SIZE = size;
-  gLevel.MINES = mines;
-  gLevel.marksLeft = mines;
 }
 
 function createBoard() {
@@ -118,6 +95,13 @@ function cellClicked(elCell, i, j) {
   )
     return;
 
+  if (gCustom.gameCustom && gCustom.minesLeft) {
+    placeMine(elCell, i, j);
+    if (!gCustom.minesLeft)
+      setTimeout(() => renderBoard(gBoard, '.board-container'), 200);
+    return;
+  }
+
   // Change cell to shown
   gBoard[i][j].isShown = true;
 
@@ -125,10 +109,13 @@ function cellClicked(elCell, i, j) {
   if (!gGame.secsPassed) {
     // To prevent exploiting mouse clicks
     gGame.secsPassed = 0.0001;
-    // Start game timer
-    startTimer();
-    // Create mines in random position
-    createRandomMines(gBoard);
+
+    if (!gCustom.gameCustom) {
+      // Create mines in random position
+      createRandomMines(gBoard);
+      // Start game timer
+      startTimer();
+    } else gCustom.gameCustom = false;
     // Update mines around counter to all cells
     countNegsMines();
   }
@@ -145,14 +132,17 @@ function cellClicked(elCell, i, j) {
   // When hitting a mine
   if (gBoard[i][j].isMine) {
     gGame.lives--;
-    elLives.textContent = LIFE.repeat(gGame.lives);
+    elLives.textContent =
+      gGame.lives > 10 ? gGame.lives : LIFE.repeat(gGame.lives);
     // Checks if we our out of lives
     if (!gGame.lives) {
       endGame(false);
       // Render all mines on board if lost all lives
       renderBoard(gBoard, '.board-container', false);
     }
-    if (gLevel.difficulty === 'easy' && checkGameOver()) endGame();
+    // Checks in easy difficulty if all cells are selected then end game
+    if (checkGameOver()) endGame();
+
     elSmiley.textContent = gSmiley[1];
     setTimeout(
       () => (elSmiley.textContent = gGame.isOn ? gSmiley[0] : gSmiley[3]),
@@ -163,13 +153,6 @@ function cellClicked(elCell, i, j) {
   }
   // Reveals cells around empty cells
   renderCellsAround(i, j);
-  //   expandShown(gBoard, elCell, i, j);
-  if (checkGameOver()) {
-    endGame();
-    renderCell(i, j);
-
-    return;
-  }
 }
 
 function cellMarked(ev, i, j) {
@@ -197,6 +180,7 @@ function checkGameOver() {
         rightMark++;
     }
   }
+  // win if every cell is shown or if u marked every mine
   if (shownCells === gLevel.SIZE ** 2) return true;
   return (
     shownCells === gLevel.SIZE ** 2 - gLevel.MINES && rightMark === gLevel.MINES
@@ -251,6 +235,7 @@ function endGame(isVictory = true) {
 
   elEndMsg.innerHTML = `<h2 class="${isVictory ? 'won' : 'lose'}">${msg}</h2>`;
 
+  // Setting bestscore in localstorage
   if (
     isVictory &&
     `${gBestScore[gLevel.difficulty]}` > `${gTimer.minutes}:${gTimer.seconds}`
@@ -317,21 +302,6 @@ function renderCellsAround(i, j) {
   }
 }
 
-function putFlag(i, j) {
-  gBoard[i][j].isMarked = true;
-  gLevel.marksLeft--;
-  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
-  renderFlag(i, j);
-  if (!gLevel.marksLeft) if (checkGameOver()) endGame();
-}
-
-function removeFlag(i, j) {
-  gBoard[i][j].isMarked = false;
-  gLevel.marksLeft++;
-  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
-  renderFlag(i, j);
-}
-
 function showAndHideCells(i, j) {
   // Showing cells in a sqaure and 1 sec after hides them
   for (let idx = i - 1; idx < i + 2; idx++) {
@@ -386,7 +356,8 @@ function restoreMove(i, j) {
   if (gBoard[i][j].minesAroundCount && !gBoard[i][j].isMarked) {
     if (gBoard[i][j].isMine) {
       gGame.lives++;
-      elLives.textContent = LIFE.repeat(gGame.lives);
+      elLives.textContent =
+        gGame.lives > 10 ? gGame.lives : LIFE.repeat(gGame.lives);
     }
     restoreCell(i, j, true);
     return;
@@ -401,7 +372,8 @@ function restoreMove(i, j) {
 
       if (gBoard[i][j].isMine) {
         gGame.lives++;
-        elLives.textContent = LIFE.repeat(gGame.lives);
+        elLives.textContent =
+          gGame.lives > 10 ? gGame.lives : LIFE.repeat(gGame.lives);
       }
       restoreCell(idx, secondIdx, true);
       // Checks if we are not in the current square so the recursion wont be infinite
@@ -413,4 +385,58 @@ function restoreMove(i, j) {
       }
     }
   }
+}
+
+function resetGameVar() {
+  gGame.history = [];
+  gGame.isHintOn = false;
+  gGame.safeClicks = 3;
+  gGame.hints = 3;
+  gGame.lives = 3;
+  gGame.isOn = true;
+  gGame.secsPassed = 0;
+  gLevel.marksLeft = gLevel.MINES;
+}
+function resetEl() {
+  elFlags.textContent = 'FlagsCount:' + gLevel.MINES;
+  elSmiley.textContent = gSmiley[0];
+  elLives.textContent =
+    gGame.lives > 10 ? gGame.lives : LIFE.repeat(gGame.lives);
+  elHints.textContent = HINT.repeat(gGame.hints);
+  elSafeClick.textContent = gGame.safeClicks;
+  elEndMsg.textContent = '';
+
+  gBestScore.elBestScore.textContent = localStorage.getItem(
+    `bestscore${gLevel.difficulty}`
+  );
+}
+function resetTimer() {
+  gTimer.seconds = '00';
+  gTimer.minutes = '00';
+  gTimer.appendMinutes.textContent = '00';
+  gTimer.appendSeconds.textContent = '00';
+  clearInterval(gTimer.interval);
+}
+function difficulty(difficulty, size, mines) {
+  form.classList.add('invisible');
+
+  gLevel.difficulty = difficulty;
+  gLevel.SIZE = size;
+  gLevel.MINES = mines;
+  gLevel.marksLeft = mines;
+}
+
+function putFlag(i, j) {
+  gBoard[i][j].isMarked = true;
+  gLevel.marksLeft--;
+  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
+  renderFlag(i, j);
+  if (!gLevel.marksLeft) if (checkGameOver()) endGame();
+}
+
+function removeFlag(i, j) {
+  gBoard[i][j].isMarked = false;
+  gLevel.marksLeft++;
+  elFlags.textContent = 'FlagsCount:' + gLevel.marksLeft;
+  renderFlag(i, j);
 }

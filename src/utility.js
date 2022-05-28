@@ -5,7 +5,7 @@ function renderBoard(mat, selector, isGameOn = true) {
   for (var i = 0; i < mat.length; i++) {
     strHTML += '<tr>';
     for (var j = 0; j < mat[0].length; j++) {
-      var cell = gBoard[i][j].isMine ? MINE : EMPTY;
+      var cell = gBoard[i][j].isMine && !isGameOn ? MINE : EMPTY;
       const showMines = isGameOn ? '' : gBoard[i][j].isMine ? 'lost' : '';
       var className = `${showMines} hidden cell-${i}-${j}`;
       strHTML +=
@@ -34,30 +34,19 @@ function renderCell(i, j, clicked = false) {
     elCell.innerHTML = MINE;
     elCell.style.backgroundColor = 'red';
   } else {
-    switch (gBoard[i][j].minesAroundCount) {
-      case 0:
-        elCell.innerHTML = EMPTY;
-        break;
-      case 1:
-        elCell.innerHTML = gBoard[i][j].minesAroundCount;
-        elCell.style.color = 'blue';
-        break;
-      case 2:
-        elCell.innerHTML = gBoard[i][j].minesAroundCount;
-        elCell.style.color = 'green';
-        break;
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-      case 8:
-        elCell.innerHTML = gBoard[i][j].minesAroundCount;
-        elCell.style.color = 'red';
-        break;
-    }
+    if (!gBoard[i][j].minesAroundCount) elCell.innerHTML = EMPTY;
+    else if (gBoard[i][j].minesAroundCount === 1)
+      setValueAndColor(elCell, 'blue', i, j);
+    else if (gBoard[i][j].minesAroundCount === 2)
+      setValueAndColor(elCell, 'green', i, j);
+    else setValueAndColor(elCell, 'red', i, j);
   }
   elCell.classList.remove('hidden');
+}
+
+function setValueAndColor(elCell, color, i, j) {
+  elCell.innerHTML = gBoard[i][j].minesAroundCount;
+  elCell.style.color = color;
 }
 
 function getRandomInc(min, max) {

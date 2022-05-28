@@ -39,6 +39,33 @@
           value="hard"
         />Hard
       </label>
+      <label>
+        <input
+          onclick="openForm()"
+          type="radio"
+          name="difficulty"
+          value="custom"
+        />Custom
+      </label>
+      <form onsubmit="startCustomGame(event)" class="invisible">
+        <label>Size:</label>
+        <input value="5" type="number" id="size" required name="size" />
+        <label>Lives:</label>
+        <input value="5" type="number" id="lives" required name="lives" />
+        <label>SafeClicks:</label>
+        <input
+          value="5"
+          type="number"
+          id="safeclicks"
+          required
+          name="safeclicks"
+        />
+        <label>Hints:</label>
+        <input value="5" type="number" id="hints" required name="hints" />
+        <label>Mines:</label>
+        <input value="2" type="number" id="mines" required name="mines" />
+        <button>Set Custom Mode</button>
+      </form>
     </div>
     <div class="special-features">
       <button onclick="hint()">
@@ -61,6 +88,7 @@
     <div class="end-msg"></div>
     <footer>© Copyright by BarBronsthein /MineSweeper</footer>
     <script src="src/utility.js"></script>
+    <script src="src/custom.js"></script>
     <script src="src/main.js"></script>
   </body>
 </html>
